@@ -45,7 +45,7 @@ Card dealCard(vector<Card>& vec, int n) {
 
 int main() {
     auto getRandomIndex = [&]() -> int {
-        std::uniform_int_distribution<> dist(0, static_cast<int>(active_cards.size()) - 1);
+        uniform_int_distribution<> dist(0, static_cast<int>(active_cards.size()) - 1);
         return dist(eng);
     };
 
