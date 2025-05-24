@@ -1,11 +1,12 @@
 #include <iostream>
 #include <vector>
+#include <random>
 
 using namespace std;
 
 struct Card {
     string name;
-    int value;
+    int value{};
 };
 
 vector<Card> deck = {{"2 kier", 2},{"2 pik", 2}, {"2 karo", 2}, {"2 trefl", 2},
@@ -21,16 +22,17 @@ vector<Card> deck = {{"2 kier", 2},{"2 pik", 2}, {"2 karo", 2}, {"2 trefl", 2},
 {"Dama kier", 12},{"Dama pik", 12}, {"Dama karo", 12}, {"Dama trefl", 12},
 {"Król kier", 13},{"Król pik", 13}, {"Król karo", 13}, {"Król trefl", 13},
 {"As kier", 14},{"As pik", 14}, {"As karo", 14}, {"As trefl", 14},};
-vector<int> deck_old = {1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6, 7, 7, 7, 7, 8, 8, 8, 8, 9, 9, 9, 9, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10};
 vector<Card> active_cards = {};
 
 int choice;
+int score;
 Card card_in_play;
 Card dealt_card;
-int score;
-int active_deck_size;
 
-bool lost = false;
+random_device rd;
+mt19937 eng(rd());
+
+bool lost;
 bool playing = true;
 
 Card dealCard(vector<Card>& vec, int n) {
@@ -42,30 +44,37 @@ Card dealCard(vector<Card>& vec, int n) {
 }
 
 int main() {
+    auto getRandomIndex = [&]() -> int {
+        std::uniform_int_distribution<> dist(0, static_cast<int>(active_cards.size()) - 1);
+        return dist(eng);
+    };
+
     while (playing) {
         lost = false;
         cout << "Witaj w High-Low! Wybierz 1. by zagrać, wybierz 2. by wyjść." << endl;
         cin >> choice;
+
         switch (choice) {
             case 1:
-                while (!lost) {
-                    if (active_cards.empty()) { // fix!!
-                        active_cards = deck;
-                        active_deck_size = 52;
-                        cout << "Przetasowano talię" << endl;
+                active_cards = deck;
+                cout << "Przetasowano talię" << endl;
+                card_in_play = dealCard(active_cards, getRandomIndex());
 
-                        card_in_play = dealCard(active_cards, rand() % active_deck_size);
-                        active_deck_size--;
+                while (!lost) {
+                    if (active_cards.empty()) {
+                        active_cards = deck;
+                        cout << "Przetasowano talię" << endl;
+                        card_in_play = dealCard(active_cards, getRandomIndex());
                     }
 
                     cout << "Twoja karta: " << card_in_play.name << endl;
                     invalid_input:
                     cout << "Jak obstawiasz? (1. jeżeli wyżej, 2. jeżeli niżej)" << endl;
                     cin >> choice;
+
                     switch (choice) {
                         case 1:
-                            dealt_card = dealCard(active_cards, rand() % active_deck_size);
-                            active_deck_size--;
+                            dealt_card = dealCard(active_cards, getRandomIndex());
                             cout << "Następna karta to: " << dealt_card.name << endl;
 
                             if (dealt_card.value == card_in_play.value) {
@@ -86,8 +95,7 @@ int main() {
                             }
 
                         case 2:
-                            dealt_card = dealCard(active_cards, rand() % active_deck_size);
-                            active_deck_size--;
+                            dealt_card = dealCard(active_cards, getRandomIndex());
                             cout << "Następna karta to: " << dealt_card.name << endl;
 
                             if (dealt_card.value == card_in_play.value) {
